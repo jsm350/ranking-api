@@ -1,0 +1,22 @@
+{
+  "name": "nyiooc-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start" : "node scripts/init-db-tables.js && node scripts/seeders.js && node index"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.7",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "puppeteer": "^23.1.0",
+    "sqlite3": "^5.1.7"
+  }
+}
