@@ -15,9 +15,12 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-
 app.use('/auth', authRoutes);
 app.use('/api',articleRoutes)
+
+app.get('/', (req, res) => {
+    res.json({ message: 'Backend is running' });
+});
 
 
 const port = process.env.PORT || 3000;
