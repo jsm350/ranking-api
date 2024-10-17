@@ -5,7 +5,10 @@ const path = require('path');
 const app = express();
 const authRoutes = require('./routes/authRoutes');
 const articleRoutes = require('./routes/articleRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
+// app.use(express.raw({ type: 'multipart/form-data', limit: '10mb' }));
 
 const cors = require('cors');
 //routes
@@ -16,7 +19,8 @@ app.use(cors({
 }));
 
 app.use('/auth', authRoutes);
-app.use('/api',articleRoutes)
+app.use('/api', articleRoutes)
+app.use('/upload', uploadRoutes)
 
 app.get('/', (req, res) => {
     res.json({ message: 'Backend is running' });
