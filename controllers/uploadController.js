@@ -1,5 +1,7 @@
-import OpenAI from "openai";
+const OpenAI = require("openai");
 const openai = new OpenAI();
+const fs = require('fs');
+const path = require('path');
 
 const multer = require('multer');
 // Configure multer storage
@@ -12,7 +14,7 @@ const storage = multer.diskStorage({
     },
 });
 
-const upload = multer({ storage: storage })
+const upload = multer({storage: storage})
 
 // Middleware to handle image upload
 exports.upload = upload.single('image');
@@ -28,18 +30,18 @@ exports.saveImage = async (req, res) => {
         const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 
         const completion = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: "gpt-4o-2024-08-06",
             messages: [
                 {
                     role: "system",
                     content: "You are an expert in Olive Oil industry and have knowledge of all olive oil brands and producers available in market worldwide." +
                         "You have to determine the producer and brand of oil by looking into image of bottle provided in following json format {producer: 'Name of producer', brand: 'Name of brand'}." +
-                        "If you don't recognize the bottle, you give a message saying 'The brand and producer can not be recognized. Please try with another picture.'"
+                        "If you don't recognize the bottle, you give a message in following format {error: 'The brand and producer can not be recognized. Please try with another picture.'} "
                 },
                 {
                     role: "user",
                     content: [
-                        { type: "text", text: "What's the name of producer and brand of olive oil bottle in the image?" },
+                        {type: "text", text: "What's the name of producer and brand of olive oil bottle in the image?"},
                         {
                             type: "image_url",
                             image_url: {
@@ -50,15 +52,18 @@ exports.saveImage = async (req, res) => {
                 },
             ],
             response_format: {
-                // See /docs/guides/structured-outputs
                 type: "json_schema",
                 json_schema: {
-                    name: "olive oil bottle schema",
+                    name: "get_olive_oil_bottle_provider_and_brand",
                     schema: {
                         type: "object",
                         properties: {
-                            email: {
-                                description: "The email address that appears in the input",
+                            producer: {
+                                description: "The name of producer of olive oil bottle you determined from the image",
+                                type: "string"
+                            },
+                            brand: {
+                                description: "The name of brand of olive oil bottle you determined from the image",
                                 type: "string"
                             }
                         },
@@ -68,11 +73,29 @@ exports.saveImage = async (req, res) => {
             }
         });
 
-        console.log(completion.choices[0].message);
+        let result = null;
+        try {
+            result = JSON.parse(completion.choices[0].message.content);
+            console.log(`Producer: ${result.producer}, Brand: ${result.brand}`);
+        } catch (e) {
+            result = {
+                error: 'Failed to parse the response as JSON.'
+            }
+            console.log(e)
+            console.log("Failed to parse the response as JSON.");
+        } finally {
+            // Always delete the uploaded file after processing
+            fs.unlink(`uploads/${req.file.filename}`, (err) => {
+                if (err) {
+                    console.error('Failed to delete image:', err);
+                }
+            });
+        }
 
         return res.send({
             success: true,
-            file: fileUrl
+            file: fileUrl,
+            data: result
         })
     }
 };
