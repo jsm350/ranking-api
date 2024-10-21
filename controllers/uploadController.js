@@ -90,7 +90,7 @@ exports.saveImage = async (req, res) => {
         }
 
         return res.send({
-            success: true,
+            success: (typeof result === 'object') && !result?.error,
             file: fileUrl,
             data: result
         })
