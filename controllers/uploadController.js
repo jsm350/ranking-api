@@ -76,13 +76,10 @@ exports.saveImage = async (req, res) => {
         let result = null;
         try {
             result = JSON.parse(completion.choices[0].message.content);
-            console.log(`Producer: ${result.producer}, Brand: ${result.brand}`);
         } catch (e) {
             result = {
                 error: 'Failed to parse the response as JSON.'
             }
-            console.log(e)
-            console.log("Failed to parse the response as JSON.");
         } finally {
             // Always delete the uploaded file after processing
             fs.unlink(`uploads/${req.file.filename}`, (err) => {
