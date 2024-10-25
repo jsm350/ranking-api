@@ -1,7 +1,25 @@
 const OpenAI = require("openai");
 const openai = new OpenAI();
 const fs = require('fs');
-const path = require('path');
+
+exports.index = (req, res) => {
+    let images = []
+    try {
+        const files = fs.readdirSync('uploads');
+        // Filter to only include image files
+        images = files.filter(file => /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(file));
+        images = images.map(image => ({name: image, url: getFileURL(req, image)}))
+    } catch (error) {
+        images = []
+        console.error("Error reading uploads directory:", error);
+        // return [];
+    }
+    res.send({
+        success: true,
+        data: images
+    })
+}
+
 
 const multer = require('multer');
 // Configure multer storage
@@ -16,10 +34,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({storage: storage})
 
+const getFileURL = (req, filename) => {
+    return `${req.protocol}://${req.get('host')}/uploads/${filename}`
+}
 // Middleware to handle image upload
 exports.upload = upload.single('image');
 
-exports.saveImage = async (req, res) => {
+exports.store = async (req, res) => {
     if (!req.file) {
         console.log("No file received");
         return res.send({
@@ -27,7 +48,7 @@ exports.saveImage = async (req, res) => {
         });
 
     } else {
-        const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        const fileUrl = getFileURL(req, req.file.filename);
 
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-2024-08-06",
@@ -80,13 +101,6 @@ exports.saveImage = async (req, res) => {
             result = {
                 error: 'Failed to parse the response as JSON.'
             }
-        } finally {
-            // Always delete the uploaded file after processing
-            fs.unlink(`uploads/${req.file.filename}`, (err) => {
-                if (err) {
-                    console.error('Failed to delete image:', err);
-                }
-            });
         }
 
         return res.send({
@@ -96,3 +110,18 @@ exports.saveImage = async (req, res) => {
         })
     }
 };
+
+exports.destroy = (req, res) => {
+    fs.unlink(`uploads/${req.params.imageName}`, (err) => {
+        if (err) {
+            console.error('Failed to delete image:', err);
+            res.send({
+                success: false,
+                error: 'Failed to delete image'
+            })
+        }
+    });
+    res.send({
+        success: true,
+    })
+}
