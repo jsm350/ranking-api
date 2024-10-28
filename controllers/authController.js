@@ -18,7 +18,7 @@ exports.login = async (req, res) => {
             if (!result) {
                 return res.status(400).json({ message: 'Invalid credentials' });
             }
-            const token = user.token;
+            const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '30d' });
             db.run('UPDATE users SET token = ? where username = ?', [token, username])
             res.json({ token });
         });
