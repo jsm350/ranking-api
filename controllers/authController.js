@@ -19,6 +19,7 @@ exports.login = async (req, res) => {
                 return res.status(400).json({ message: 'Invalid credentials' });
             }
             const token = user.token;
+            db.run('UPDATE users SET token = ? where username = ?', [token, username])
             res.json({ token });
         });
     });
