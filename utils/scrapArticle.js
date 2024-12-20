@@ -5,31 +5,46 @@ async function scrapeArticle(articleLink) {
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
-    const page = await browser.newPage();
 
-    await page.goto(articleLink, { waitUntil: 'networkidle2' });
+    try {
+        console.log('Launching browser...');
+        const page = await browser.newPage();
 
-    const data = await page.evaluate(() => {
-        let title = document.querySelector('h1')?.innerText || document.querySelector('#cover-news-left h2')?.innerText;
-        const excerpt = document.querySelector('.brief-excerpt')?.innerText || document.querySelector('#cover-news-left .bigger-p')?.innerText;
+        console.log(`Navigating to ${articleLink}...`);
+        await page.goto(articleLink, { waitUntil: 'networkidle2', timeout: 30000 });
 
-        let imageUrl = window.getComputedStyle(document.querySelector('#cover-news-content'))?.backgroundImage;
+        console.log('Extracting data...');
+        const data = await page.evaluate(() => {
+            let title =
+                document.querySelector('h1')?.innerText ||
+                document.querySelector('#cover-news-left h2')?.innerText ||
+                null;
 
-        if (imageUrl && imageUrl !== 'none') {
-            imageUrl = imageUrl.slice(5, -2);
-        } else {
-            imageUrl = document.querySelector('figure img')?.src;
-        }
+            const excerpt =
+                document.querySelector('.brief-excerpt')?.innerText ||
+                document.querySelector('#cover-news-left .bigger-p')?.innerText ||
+                null;
 
-        return {
-            title,
-            excerpt,
-            imageUrl,
-        };
-    });
+            let imageUrl = document.querySelector('meta[property="og:image"]')?.getAttribute('content') ||
+                document.querySelector('figure img')?.src || 
+                null;
 
-    await browser.close();
-    return data;
+            return {
+                title: title || 'No title found',
+                excerpt: excerpt || 'No excerpt found',
+                imageUrl: imageUrl || 'No image URL found',
+            };
+        });
+
+        console.log('Data extraction complete:', data);
+        return data;
+    } catch (error) {
+        console.error('An error occurred:', error.message);
+        return { title: null, excerpt: null, imageUrl: null, error: error.message };
+    } finally {
+        console.log('Closing browser...');
+        await browser.close();
+    }
 }
 
 module.exports = scrapeArticle;
