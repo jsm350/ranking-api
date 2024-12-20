@@ -10,6 +10,23 @@ async function scrapeArticle(articleLink) {
         console.log('Launching browser...');
         const page = await browser.newPage();
 
+        // Set mobile user agent
+        console.log('Setting mobile user agent...');
+        await page.setUserAgent(
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1'
+        );
+
+        // Emulate mobile device
+        console.log('Emulating mobile device...');
+        await page.emulate({
+            viewport: {
+                width: 375,
+                height: 812, // iPhone X dimensions
+                isMobile: true,
+                hasTouch: true,
+            },
+        });
+
         console.log(`Navigating to ${articleLink}...`);
         await page.goto(articleLink, { waitUntil: 'networkidle2', timeout: 30000 });
 
