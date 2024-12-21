@@ -53,6 +53,14 @@ async function scrapeArticle(articleLink) {
             };
         });
 
+        console.log('Replacing image URL...');
+        if (data.imageUrl && data.imageUrl.startsWith('https://img-cdn.oliveoiltimes.com/')) {
+            data.imageUrl = data.imageUrl.replace(
+                'https://img-cdn.oliveoiltimes.com/',
+                'https://oliveoilranking.org/cdn3/'
+            );
+        }
+
         console.log('Data extraction complete:', data);
         return data;
     } catch (error) {
@@ -65,6 +73,20 @@ async function scrapeArticle(articleLink) {
 }
 
 module.exports = scrapeArticle;
+
+// Example usage (replace PORT with your desired port)
+const PORT = 3000;
+const express = require('express');
+const app = express();
+
+app.get('/scrape', async (req, res) => {
+    const { url } = req.query;
+    if (!url) {
+        return res.status(400).send('Missing "url" query parameter');
+    }
+    const data = await scrapeArticle(url);
+    res.json(data);
+});
 
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
