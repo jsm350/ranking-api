@@ -13,11 +13,9 @@ async function scrapeArticle(articleLink) {
         let title = document.querySelector('h1')?.innerText || document.querySelector('#cover-news-left h2')?.innerText;
         const excerpt = document.querySelector('.brief-excerpt')?.innerText || document.querySelector('#cover-news-left .bigger-p')?.innerText;
 
-        let imageUrl = window.getComputedStyle(document.querySelector('#cover-news-content'))?.backgroundImage;
+        let imageUrl = document.querySelector('meta[property="og:image"]')?.content;
 
-        if (imageUrl && imageUrl !== 'none') {
-            imageUrl = imageUrl.slice(5, -2);
-        } else {
+        if (!imageUrl || imageUrl === '') {
             imageUrl = document.querySelector('figure img')?.src;
         }
 
