@@ -16,6 +16,23 @@ exports.index = (req, res) => {
     });
 }
 
+exports.show = (req, res) => {
+    db.all('SELECT * FROM distributors WHERE producer_id = ?', [req.params.distributorId], (err, rows) => {
+        if (err) {
+            return res.status(500).send(
+                {
+                    success: false,
+                    error: err,
+                }
+            );
+        }
+        res.send({
+            success: true,
+            data: rows,
+        });
+    });
+}
+
 exports.store = async (req, res) => {
     const producers = req.body;
     if (!producers.length) {
