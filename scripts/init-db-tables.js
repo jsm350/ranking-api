@@ -5,6 +5,7 @@ const dbPath = path.resolve(__dirname, '../config/database.sqlite');
 const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
+    console.log('Database initialized');
     // Recreate the tables
     db.run(`
         CREATE TABLE IF NOT EXISTS users (
@@ -36,6 +37,20 @@ db.serialize(() => {
             console.error('Error creating producer_article table:', err.message);
         } else {
             console.log('Producer_article table created successfully.');
+        }
+    });
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS distributors (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            producer_id INTEGER NOT NULL UNIQUE,
+            label TEXT
+        )
+    `, (err) => {
+        if (err) {
+            console.error('Error creating distributors table:', err.message);
+        } else {
+            console.log('Distributors table created successfully.');
         }
     });
 });
