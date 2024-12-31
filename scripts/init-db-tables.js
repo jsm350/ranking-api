@@ -44,7 +44,8 @@ db.serialize(() => {
         CREATE TABLE IF NOT EXISTS distributors (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             producer_id INTEGER NOT NULL UNIQUE,
-            label TEXT
+            label TEXT,
+            slug TEXT
         )
     `, (err) => {
         if (err) {

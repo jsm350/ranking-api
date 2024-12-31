@@ -17,7 +17,7 @@ exports.index = (req, res) => {
 }
 
 exports.show = (req, res) => {
-    db.all('SELECT * FROM distributors WHERE producer_id = ?', [req.params.distributorId], (err, rows) => {
+    db.all('SELECT * FROM distributors WHERE slug = ?', [req.params.distributorSlug], (err, rows) => {
         if (err) {
             return res.status(500).send(
                 {
@@ -46,8 +46,8 @@ exports.store = async (req, res) => {
         try {
             return new Promise(async (resolve, reject) => {
                 db.run(
-                    'INSERT OR IGNORE INTO distributors (producer_id, label) VALUES (?, ?)',
-                    [producer.id, producer.label],
+                    'INSERT OR IGNORE INTO distributors (producer_id, label, slug) VALUES (?, ?, ?)',
+                    [producer.id, producer.label, producer.producer_slug],
                     function (err) {
                         if (err) {
                             return reject(err);
