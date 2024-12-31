@@ -4,7 +4,7 @@ const distributorController = require('../controllers/distributorController');
 const {authenticateToken} = require("../middlewares/authMiddleware");
 
 router.post('/', distributorController.store);
-router.get('/', authenticateToken, distributorController.index);
+router.get('/', distributorController.index);
 router.get('/:distributorSlug', authenticateToken, distributorController.show);
 router.delete('/:distributorId', authenticateToken, distributorController.destroy);
 
